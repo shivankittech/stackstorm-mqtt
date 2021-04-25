@@ -17,7 +17,8 @@ class MQTTSensor(Sensor):
     def __init__(self, sensor_service, config=None):
         super(MQTTSensor, self).__init__(sensor_service=sensor_service,
                                          config=config)
-
+        self.isMqttConnected = False
+        self._topicTriggers = {}
         self._trigger = 'mqtt.message'
         self._logger = self._sensor_service.get_logger(__name__)
 
@@ -77,7 +78,13 @@ class MQTTSensor(Sensor):
         self._client.disconnect()
 
     def add_trigger(self, trigger):
-        pass
+        triggerRef = trigger.get("ref", None)
+        topic = trigger["parameters"].get("topicName", None)
+
+        self._topicTriggers[topic] = triggerRef
+
+        if self.isMqttConnected:
+            self._client.subscribe(topic)
 
     def update_trigger(self, trigger):
         pass
@@ -87,10 +94,10 @@ class MQTTSensor(Sensor):
 
     def _on_connect(self, client, userdata, flags, rc):
         self._logger.debug('[MQTTSensor]: Connected with code {}' + str(rc))
-        if self._subscribe:
-            for topic in self._subscribe:
-                self._logger.debug('[MQTTSensor]: Sub to ' + str(topic))
-                self._client.subscribe(topic)
+        self.isMqttConnected = True
+        for topic in self._topicTriggers:        
+            self._logger.debug('[MQTTSensor]: Sub to ' + str(topic))
+            self._client.subscribe(topic)
 
     def _on_message(self, client, userdata, msg):
         message = msg.payload.decode("utf-8")
