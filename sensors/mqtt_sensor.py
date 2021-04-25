@@ -80,11 +80,15 @@ class MQTTSensor(Sensor):
     def add_trigger(self, trigger):
         triggerRef = trigger.get("ref", None)
         topic = trigger["parameters"].get("topicName", None)
+        self._logger.debug('[MQTTSensor]: Sub to ' + topic)
 
         self._topicTriggers[topic] = triggerRef
 
         if self.isMqttConnected:
+            self._logger.debug('[MQTTSensor]: mqtt is  ' + topic)
             self._client.subscribe(topic)
+        else:
+            self._logger.debug('[MQTTSensor]: mqtt is not true')
 
     def update_trigger(self, trigger):
         pass
