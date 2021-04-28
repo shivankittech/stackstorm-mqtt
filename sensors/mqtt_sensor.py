@@ -112,4 +112,4 @@ class MQTTSensor(Sensor):
             'retain': msg.retain,
             'qos': msg.qos,
         }
-        self._sensor_service.dispatch(trigger=self._trigger, payload=payload)
+        self._sensor_service.dispatch(trigger=self._topicTriggers[msg.topic], payload=payload)
